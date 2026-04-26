@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDGE CARS — Gestion Véhicules</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--o:#FF5C00;--b:#080808;--b2:#0F0F0F;--b3:#1A1A1A;--w:#FAFAF8;--g:#888;--border:rgba(255,255,255,0.06);--success:#1D9E75;--warning:#F5A623;--danger:#E24B4A;--info:#3B82F6;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:var(--b);color:var(--w);display:flex;min-height:100vh;}
+
+
+.sidebar,.main,.login-screen{position:relative;z-index:1;}
+.login-screen{background:rgba(8,8,8,0.85);backdrop-filter:blur(8px);}
+
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:var(--b);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.login-box{background:var(--b2);border:1px solid var(--border);padding:48px;width:420px;}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;margin-bottom:8px;text-align:center;}
+.login-logo span{color:var(--o);}
+.login-sub{text-align:center;font-size:13px;color:var(--g);margin-bottom:32px;}
+.login-form{display:flex;flex-direction:column;gap:16px;}
+.form-input{background:var(--b3);border:1px solid var(--border);color:var(--w);padding:14px 16px;font-family:'Outfit',sans-serif;font-size:14px;outline:none;width:100%;}
+.form-input:focus{border-color:var(--o);}
+.form-select{background:var(--b3);border:1px solid var(--border);color:var(--w);padding:12px 14px;font-family:'Outfit',sans-serif;font-size:14px;outline:none;width:100%;}
+.form-select:focus{border-color:var(--o);}
+.form-textarea{background:var(--b3);border:1px solid var(--border);color:var(--w);padding:12px 14px;font-family:'Outfit',sans-serif;font-size:14px;outline:none;width:100%;resize:none;}
+.login-btn{background:var(--o);color:#fff;border:none;padding:16px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.err{color:var(--danger);font-size:13px;text-align:center;display:none;}
+
+/* SIDEBAR */
+.sidebar{width:260px;background:var(--b2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:10;}
+.s-logo{padding:24px;border-bottom:1px solid var(--border);}
+.s-logo-txt{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;}
+.s-logo-txt span{color:var(--o);}
+.s-logo-sub{font-size:10px;color:var(--g);letter-spacing:2px;margin-top:2px;}
+.s-nav{flex:1;padding:12px 0;overflow-y:auto;}
+.s-section{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:14px 20px 6px;}
+.s-item{display:flex;align-items:center;gap:12px;padding:10px 20px;font-size:13px;font-weight:500;color:var(--g);cursor:pointer;transition:all 0.2s;border-left:2px solid transparent;}
+.s-item:hover{color:var(--w);background:rgba(255,255,255,0.03);}
+.s-item.active{color:var(--o);border-left-color:var(--o);background:rgba(255,92,0,0.05);}
+.s-icon{font-size:15px;width:18px;text-align:center;}
+.s-bottom{padding:16px 20px;border-top:1px solid var(--border);}
+.u-info{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.u-avatar{width:34px;height:34px;background:var(--o);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.u-name{font-size:13px;font-weight:600;}
+.u-role{font-size:11px;color:var(--g);}
+.logout{background:transparent;border:1px solid var(--border);color:var(--g);padding:8px;font-size:12px;cursor:pointer;width:100%;}
+.logout:hover{border-color:var(--danger);color:var(--danger);}
+
+/* MAIN */
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--b2);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;}
+.content{padding:28px;flex:1;}
+.section{display:none;}
+.section.active{display:block;}
+
+/* BUTTONS */
+.btn{border:none;padding:10px 18px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;}
+.btn-o{background:var(--o);color:#fff;}.btn-o:hover{background:#ff7733;}
+.btn-b{background:transparent;border:1px solid var(--border);color:var(--g);}.btn-b:hover{border-color:var(--o);color:var(--o);}
+.btn-d{background:transparent;border:1px solid var(--danger);color:var(--danger);padding:6px 12px;font-size:11px;}
+.btn-s{background:var(--success);color:#fff;padding:6px 12px;font-size:11px;}
+.btn-i{background:var(--info);color:#fff;padding:6px 12px;font-size:11px;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat{background:var(--b2);border:1px solid var(--border);padding:20px;}
+.stat-lbl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g);margin-bottom:10px;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;margin-bottom:4px;}
+.stat-sub{font-size:11px;color:var(--g);}
+
+/* CARDS VÉHICULES */
+.v-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.v-card{background:var(--b2);border:1px solid var(--border);padding:0;overflow:hidden;transition:border-color 0.2s;cursor:pointer;}
+.v-card:hover{border-color:rgba(255,92,0,0.4);}
+.v-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
+.v-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;}
+.v-sub{font-size:12px;color:var(--g);margin-top:2px;}
+.v-body{padding:16px 20px;}
+.v-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.v-row:last-child{border-bottom:none;}
+.v-label{font-size:11px;color:var(--g);}
+.v-value{font-size:13px;font-weight:600;}
+.v-value.orange{color:var(--o);}
+.v-value.green{color:var(--success);}
+.v-value.red{color:var(--danger);}
+.v-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;}
+
+/* BADGES */
+.badge{display:inline-flex;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;}
+.b-transit{background:rgba(59,130,246,0.15);color:var(--info);}
+.b-rep{background:rgba(245,166,35,0.15);color:var(--warning);}
+.b-dispo{background:rgba(29,158,117,0.15);color:var(--success);}
+.b-vendu{background:rgba(255,255,255,0.08);color:var(--g);}
+.b-vtc{background:rgba(255,92,0,0.15);color:var(--o);}
+.b-loc{background:rgba(139,92,246,0.15);color:#8B5CF6;}
+
+/* TABLE */
+.tcard{background:var(--b2);border:1px solid var(--border);margin-bottom:20px;}
+.thead{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ttitle{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g);padding:10px 18px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:12px 18px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);}
+tr:hover td{background:rgba(255,255,255,0.02);}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:flex-start;justify-content:center;z-index:100;overflow-y:auto;padding:40px 20px;}
+.overlay.open{display:flex;}
+.modal{background:var(--b2);border:1px solid var(--border);padding:32px;width:100%;max-width:680px;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:24px;}
+.modal-actions{display:flex;gap:12px;margin-top:24px;justify-content:flex-end;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--g);}
+.section-divider{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--o);padding:16px 0 8px;border-bottom:1px solid var(--border);margin-bottom:16px;grid-column:1/-1;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;font-size:13px;font-weight:600;z-index:999;display:none;}
+.toast.ok{background:var(--success);color:#fff;}
+.toast.err{background:var(--danger);color:#fff;}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--g);}
+.sp{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--o);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PROGRESS */
+.progress-steps{display:flex;align-items:center;gap:0;margin-bottom:24px;}
+.p-step{flex:1;text-align:center;position:relative;}
+.p-step::after{content:'';position:absolute;top:14px;left:50%;right:-50%;height:2px;background:var(--border);z-index:0;}
+.p-step:last-child::after{display:none;}
+.p-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin:0 auto 6px;position:relative;z-index:1;}
+.p-dot.done{background:var(--success);border-color:var(--success);color:#fff;}
+.p-dot.current{background:var(--o);border-color:var(--o);color:#fff;}
+.p-lbl{font-size:10px;color:var(--g);letter-spacing:1px;}
+
+.bg-wrapper{position:fixed;inset:0;overflow:hidden;z-index:0;}
+.bg-gradient{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%, rgba(255,92,0,0.25) 0%, transparent 55%),radial-gradient(ellipse at 80% 20%, rgba(255,92,0,0.15) 0%, transparent 45%),#080808;}
+.bg-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.3);}
+.bg-item{position:absolute;animation:rise linear infinite;filter:drop-shadow(0 0 20px rgba(255,92,0,0.6));}
+@keyframes rise{0%{opacity:0;transform:translateY(110vh) rotate(-8deg) scale(0.9);}6%{opacity:0.30;}94%{opacity:0.30;}100%{opacity:0;transform:translateY(-15vh) rotate(8deg) scale(1.05);}}
+
+.login-screen{background:transparent!important;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+
+</div>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo"><span>EDGE</span> CARS</div>
+    <div class="login-sub">Plateforme de gestion véhicules</div>
+    <div class="login-form">
+      <input type="email" class="form-input" id="lEmail" placeholder="Email" value="admin@edgeprod.sn">
+      <input type="password" class="form-input" id="lPassword" placeholder="Mot de passe" value="edgecars2024">
+      <div class="err" id="lErr">Identifiants incorrects</div>
+      <button class="login-btn" onclick="login()">Accéder au tableau de bord →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay"><div class="modal" id="modalContent"></div></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar" style="display:none;">
+  <div class="s-logo">
+    <div class="s-logo-txt"><span>EDGE</span> CARS</div>
+    <div class="s-logo-sub">Gestion Véhicules Import</div>
+  </div>
+  <nav class="s-nav">
+    <div class="s-section">Vue globale</div>
+    <div class="s-item active" onclick="nav('dashboard')"><span class="s-icon">📊</span>Dashboard</div>
+    <div class="s-item" onclick="nav('vehicules')"><span class="s-icon">🚗</span>Tous les véhicules</div>
+    <div class="s-section">Processus</div>
+    <div class="s-item" onclick="nav('achat')"><span class="s-icon">🇺🇸</span>Achat USA (Copart)</div>
+    <div class="s-item" onclick="nav('transit')"><span class="s-icon">🚢</span>En transit</div>
+    <div class="s-item" onclick="nav('port')"><span class="s-icon">⚓</span>Port & Dédouanement</div>
+    <div class="s-item" onclick="nav('reparation')"><span class="s-icon">🔧</span>Réparation</div>
+    <div class="s-section">Commercialisation</div>
+    <div class="s-item" onclick="nav('revente')"><span class="s-icon">💰</span>À vendre</div>
+    <div class="s-item" onclick="nav('location')"><span class="s-icon">📅</span>Location</div>
+    <div class="s-item" onclick="nav('vtc')"><span class="s-icon">🚖</span>VTC & Chauffeurs</div>
+  </nav>
+  <div class="s-bottom">
+    <div class="u-info">
+      <div class="u-avatar">EC</div>
+      <div><div class="u-name" id="adminName">Admin</div><div class="u-role" id="adminRole">Administrateur</div></div>
+    </div>
+    <button class="logout" onclick="logout()">Se déconnecter</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main" id="mainEl" style="display:none;">
+  <div class="topbar">
+    <div class="topbar-title" id="pageTitle">DASHBOARD</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-o" onclick="openNewVehicule()">+ Nouveau véhicule</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="section-dashboard">
+      <div class="stats" id="statsGrid"><div class="loading"><div class="sp"></div>Chargement...</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="tcard">
+          <div class="thead"><div class="ttitle">DERNIERS VÉHICULES</div></div>
+          <table><thead><tr><th>Véhicule</th><th>Lot</th><th>Statut</th><th>Coût total</th></tr></thead>
+          <tbody id="recentVehicules"><tr><td colspan="4" class="loading"><div class="sp"></div></td></tr></tbody></table>
+        </div>
+        <div class="tcard">
+          <div class="thead"><div class="ttitle">VTC — VERSEMENTS DU JOUR</div></div>
+          <table><thead><tr><th>Chauffeur</th><th>Véhicule</th><th>Attendu</th><th>Versé</th></tr></thead>
+          <tbody id="todayVTC"><tr><td colspan="4" class="loading"><div class="sp"></div></td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOUS VÉHICULES -->
+    <div class="section" id="section-vehicules">
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <select class="form-select" style="width:auto;" onchange="filterV(this.value)" id="filterEtat">
+          <option value="">Tous les statuts</option>
+          <option value="en_transit">En transit</option>
+          <option value="en_reparation">En réparation</option>
+          <option value="disponible">Disponible</option>
+          <option value="vendu">Vendu</option>
+          <option value="vtc">VTC</option>
+          <option value="location">En location</option>
+        </select>
+        <select class="form-select" style="width:auto;" onchange="filterMode(this.value)">
+          <option value="">Tous modes</option>
+          <option value="revente">Revente</option>
+          <option value="location">Location</option>
+          <option value="vtc">VTC</option>
+        </select>
+      </div>
+      <div class="v-grid" id="vehiculesGrid"><div class="loading"><div class="sp"></div></div></div>
+    </div>
+
+    <!-- ACHAT USA -->
+    <div class="section" id="section-achat">
+      <div class="v-grid" id="achatGrid"><div class="loading"><div class="sp"></div></div></div>
+    </div>
+
+    <!-- EN TRANSIT -->
+    <div class="section" id="section-transit">
+      <div class="tcard">
+        <div class="thead"><div class="ttitle">VÉHICULES EN TRANSIT</div></div>
+        <table><thead><tr><th>Véhicule</th><th>Lot</th><th>Compagnie</th><th>Départ</th><th>Arrivée est.</th><th>BL</th><th>Action</th></tr></thead>
+        <tbody id="transitTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- PORT -->
+    <div class="section" id="section-port">
+      <div class="v-grid" id="portGrid"><div class="loading"><div class="sp"></div></div></div>
+    </div>
+
+    <!-- RÉPARATION -->
+    <div class="section" id="section-reparation">
+      <div class="v-grid" id="repGrid"><div class="loading"><div class="sp"></div></div></div>
+    </div>
+
+    <!-- REVENTE -->
+    <div class="section" id="section-revente">
+      <div class="v-grid" id="reventeGrid"><div class="loading"><div class="sp"></div></div></div>
+    </div>
+
+    <!-- LOCATION -->
+    <div class="section" id="section-location">
+      <div class="tcard">
+        <div class="thead"><div class="ttitle">VÉHICULES EN LOCATION</div>
+        <button class="btn btn-o" onclick="openNewLocation()">+ Nouvelle location</button></div>
+        <table><thead><tr><th>Véhicule</th><th>Client</th><th>Début</th><th>Fin</th><th>Prix/j</th><th>Total</th><th>Statut</th></tr></thead>
+        <tbody id="locationTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- VTC -->
+    <div class="section" id="section-vtc">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="tcard">
+          <div class="thead"><div class="ttitle">CHAUFFEURS VTC</div>
+          <button class="btn btn-o" onclick="openNewChauffeur()">+ Chauffeur</button></div>
+          <table><thead><tr><th>Chauffeur</th><th>Véhicule</th><th>Montant/j</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="chauffeursTable"></tbody></table>
+        </div>
+        <div class="tcard">
+          <div class="thead"><div class="ttitle">VERSEMENTS RÉCENTS</div></div>
+          <table><thead><tr><th>Date</th><th>Chauffeur</th><th>Attendu</th><th>Versé</th><th>Km</th></tr></thead>
+          <tbody id="versementsTable"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const API = window.location.origin + '/api';
+let TOKEN = localStorage.getItem('ec_token');
+let ADMIN = JSON.parse(localStorage.getItem('ec_admin')||'{}');
+let ALL_VEHICULES = [];
+let ALL_CHAUFFEURS = [];
+
+const $ = id => document.getElementById(id);
+const fmt = n => new Intl.NumberFormat('fr-FR').format(n||0);
+const fmtD = d => d ? new Date(d).toLocaleDateString('fr-FR') : '—';
+
+function toast(msg, type='ok') {
+  const t=$('toast'); t.textContent=msg; t.className=`toast ${type}`; t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+
+async function api(url, opts={}) {
+  const r = await fetch(API+url, { headers:{'Content-Type':'application/json',...(TOKEN?{Authorization:`Bearer ${TOKEN}`}:{})}, ...opts });
+  if(!r.ok) throw new Error((await r.json()).error||'Erreur');
+  return r.json();
+}
+
+function etatBadge(e) {
+  const m={en_transit:'b-transit',en_reparation:'b-rep',disponible:'b-dispo',vendu:'b-vendu',vtc:'b-vtc',location:'b-loc'};
+  const l={en_transit:'En transit',en_reparation:'Réparation',disponible:'Disponible',vendu:'Vendu',vtc:'VTC',location:'En location'};
+  return `<span class="badge ${m[e]||''}">${l[e]||e}</span>`;
+}
+
+// ── AUTH
+async function login() {
+  try {
+    const d = await api('/auth/login',{method:'POST',body:JSON.stringify({email:$('lEmail').value,password:$('lPassword').value})});
+    TOKEN=d.token; ADMIN=d.admin;
+    localStorage.setItem('ec_token',TOKEN);
+    localStorage.setItem('ec_admin',JSON.stringify(ADMIN));
+    initApp();
+  } catch { $('lErr').style.display='block'; }
+}
+function logout() { localStorage.clear(); location.reload(); }
+
+function initApp() {
+  $('loginScreen').style.display='none';
+  $('sidebar').style.display='flex';
+  $('mainEl').style.display='flex';
+  $('adminName').textContent=ADMIN.nom||'Admin';
+  $('adminRole').textContent=ADMIN.role==='admin'?'Administrateur':'Associé';
+  loadAll();
+}
+
+// ── NAVIGATION
+function nav(section) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.s-item').forEach(i=>i.classList.remove('active'));
+  $(`section-${section}`).classList.add('active');
+  event?.currentTarget?.classList.add('active');
+  $('pageTitle').textContent=section.toUpperCase().replace('-',' ');
+  const loaders={vehicules:renderVehicules,achat:renderAchat,transit:renderTransit,port:renderPort,reparation:renderReparation,revente:renderRevente,location:loadLocation,vtc:loadVTC};
+  if(loaders[section]) loaders[section]();
+}
+
+function openModal(html) { $('modalContent').innerHTML=html; $('overlay').classList.add('open'); }
+function closeModal() { $('overlay').classList.remove('open'); }
+$('overlay').addEventListener('click',e=>{if(e.target===$('overlay'))closeModal();});
+
+// ── LOAD ALL
+async function loadAll() {
+  try {
+    ALL_VEHICULES = await api('/vehicules');
+    ALL_CHAUFFEURS = await api('/chauffeurs');
+    loadDashboard();
+  } catch(e) { toast('Erreur chargement','err'); }
+}
+
+// ── DASHBOARD
+async function loadDashboard() {
+  try {
+    const s = await api('/vehicules/stats/summary');
+    $('statsGrid').innerHTML = `
+      <div class="stat"><div class="stat-lbl">Total véhicules</div><div class="stat-val">${s.total}</div><div class="stat-sub">${s.disponible} disponibles</div></div>
+      <div class="stat"><div class="stat-lbl">En transit/port</div><div class="stat-val">${s.en_transit}</div><div class="stat-sub">${s.en_reparation} en réparation</div></div>
+      <div class="stat"><div class="stat-lbl">Revenus revente</div><div class="stat-val" style="font-size:28px">${fmt(s.revenus_revente)}</div><div class="stat-sub">Fcfa — ${s.vendu} vendus</div></div>
+      <div class="stat"><div class="stat-lbl">VTC ce mois</div><div class="stat-val" style="font-size:28px">${fmt(s.versements_mois)}</div><div class="stat-sub">Fcfa — ${s.vtc} véhicules</div></div>
+    `;
+
+    $('recentVehicules').innerHTML = ALL_VEHICULES.slice(0,8).map(v=>`
+      <tr onclick="openVehiculeDetail(${v.id})" style="cursor:pointer">
+        <td><strong>${v.marque} ${v.modele}</strong><br><small style="color:var(--g)">${v.annee||'—'}</small></td>
+        <td style="color:var(--g)">${v.lot_number||'—'}</td>
+        <td>${etatBadge(v.etat)}</td>
+        <td style="color:var(--o);font-weight:600">${fmt(v.cout_total)} F</td>
+      </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--g);padding:20px">Aucun véhicule</td></tr>';
+
+    // VTC du jour
+    const today = new Date().toISOString().slice(0,10);
+    const vtcVehicules = ALL_VEHICULES.filter(v=>v.mode==='vtc'||v.etat==='vtc');
+    $('todayVTC').innerHTML = ALL_CHAUFFEURS.filter(c=>c.statut==='actif').map(c=>{
+      const v = ALL_VEHICULES.find(vv=>vv.id===c.vehicule_id);
+      return `<tr>
+        <td><strong>${c.nom}</strong></td>
+        <td>${v?`${v.marque} ${v.modele}`:'—'}</td>
+        <td>${fmt(c.montant_journalier)} F</td>
+        <td><button class="btn btn-s" onclick="quickVersement(${c.id},${c.montant_journalier},'${today}')">+ Versement</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--g);padding:20px">Aucun VTC actif</td></tr>';
+
+  } catch(e) { toast('Erreur dashboard','err'); }
+}
+
+// ── VÉHICULES
+function renderVehicules() {
+  const etat=$('filterEtat')?.value||'';
+  const filtered = etat ? ALL_VEHICULES.filter(v=>v.etat===etat) : ALL_VEHICULES;
+  $('vehiculesGrid').innerHTML = filtered.length ? filtered.map(vCard).join('') : '<div style="color:var(--g);padding:40px;text-align:center">Aucun véhicule</div>';
+}
+
+function filterV(etat) { renderVehicules(); }
+function filterMode(mode) {
+  const filtered = mode ? ALL_VEHICULES.filter(v=>v.mode===mode) : ALL_VEHICULES;
+  $('vehiculesGrid').innerHTML = filtered.length ? filtered.map(vCard).join('') : '<div style="color:var(--g);padding:40px;text-align:center">Aucun véhicule</div>';
+}
+
+function vCard(v) {
+  return `
+    <div class="v-card" onclick="openVehiculeDetail(${v.id})">
+      <div class="v-header">
+        <div>
+          <div class="v-title">${v.marque} ${v.modele}</div>
+          <div class="v-sub">${v.annee||'—'} · ${v.couleur||''} · ${v.carburant}</div>
+        </div>
+        ${etatBadge(v.etat)}
+      </div>
+      <div class="v-body">
+        <div class="v-row"><span class="v-label">Lot Copart</span><span class="v-value">${v.lot_number||'—'}</span></div>
+        <div class="v-row"><span class="v-label">VIN</span><span class="v-value" style="font-size:11px">${v.vin||'—'}</span></div>
+        <div class="v-row"><span class="v-label">Kilométrage</span><span class="v-value">${fmt(v.kilometrage)} km</span></div>
+        <div class="v-row"><span class="v-label">Coût total revient</span><span class="v-value orange">${fmt(v.cout_total)} F</span></div>
+        ${v.benefice!==null?`<div class="v-row"><span class="v-label">Bénéfice</span><span class="v-value ${v.benefice>=0?'green':'red'}">${fmt(v.benefice)} F</span></div>`:''}
+      </div>
+      <div class="v-footer">
+        <button class="btn btn-o" style="flex:1;padding:8px" onclick="event.stopPropagation();openVehiculeDetail(${v.id})">Gérer →</button>
+      </div>
+    </div>`;
+}
+
+function renderAchat() {
+  $('achatGrid').innerHTML = ALL_VEHICULES.map(v=>`
+    <div class="v-card" onclick="openCoutsAchat(${v.id})">
+      <div class="v-header"><div><div class="v-title">${v.marque} ${v.modele}</div><div class="v-sub">Lot: ${v.lot_number||'—'}</div></div>${etatBadge(v.etat)}</div>
+      <div class="v-body">
+        <div class="v-row"><span class="v-label">Prix achat (enchère)</span><span class="v-value orange">à renseigner</span></div>
+      </div>
+      <div class="v-footer"><button class="btn btn-o" style="flex:1;padding:8px">Saisir coûts USA →</button></div>
+    </div>`).join('') || '<div style="color:var(--g);padding:40px;text-align:center">Aucun véhicule</div>';
+}
+
+function renderTransit() {
+  const transit = ALL_VEHICULES.filter(v=>v.etat==='en_transit');
+  $('transitTable').innerHTML = transit.map(v=>`
+    <tr>
+      <td><strong>${v.marque} ${v.modele} ${v.annee||''}</strong></td>
+      <td>${v.lot_number||'—'}</td>
+      <td>—</td><td>—</td><td>—</td><td>—</td>
+      <td><button class="btn btn-i" onclick="openTransport(${v.id})">Modifier</button></td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--g);padding:20px">Aucun véhicule en transit</td></tr>';
+}
+
+function renderPort() {
+  const enPort = ALL_VEHICULES.filter(v=>v.etat==='en_transit'||v.etat==='au_port');
+  $('portGrid').innerHTML = enPort.map(v=>`
+    <div class="v-card" onclick="openCoutsPort(${v.id})">
+      <div class="v-header"><div><div class="v-title">${v.marque} ${v.modele}</div></div>${etatBadge(v.etat)}</div>
+      <div class="v-body"><div class="v-row"><span class="v-label">Frais port</span><span class="v-value orange">Cliquer pour saisir</span></div></div>
+      <div class="v-footer"><button class="btn btn-o" style="flex:1;padding:8px">Saisir frais port →</button></div>
+    </div>`).join('') || '<div style="color:var(--g);padding:40px;text-align:center">Aucun véhicule au port</div>';
+}
+
+function renderReparation() {
+  const enRep = ALL_VEHICULES.filter(v=>v.etat==='en_reparation'||v.etat==='disponible');
+  $('repGrid').innerHTML = enRep.map(v=>`
+    <div class="v-card" onclick="openReparations(${v.id})">
+      <div class="v-header"><div><div class="v-title">${v.marque} ${v.modele}</div><div class="v-sub">${v.annee||'—'}</div></div>${etatBadge(v.etat)}</div>
+      <div class="v-body"><div class="v-row"><span class="v-label">Coût total revient</span><span class="v-value orange">${fmt(v.cout_total)} F</span></div></div>
+      <div class="v-footer"><button class="btn btn-o" style="flex:1;padding:8px">Gérer réparations →</button></div>
+    </div>`).join('') || '<div style="color:var(--g);padding:40px;text-align:center">Aucun</div>';
+}
+
+function renderRevente() {
+  const aVendre = ALL_VEHICULES.filter(v=>v.mode==='revente'&&v.etat!=='vendu');
+  $('reventeGrid').innerHTML = aVendre.map(v=>`
+    <div class="v-card">
+      <div class="v-header"><div><div class="v-title">${v.marque} ${v.modele}</div><div class="v-sub">${v.annee||'—'} · ${v.kilometrage?fmt(v.kilometrage)+' km':''}</div></div>${etatBadge(v.etat)}</div>
+      <div class="v-body">
+        <div class="v-row"><span class="v-label">Coût de revient</span><span class="v-value orange">${fmt(v.cout_total)} F</span></div>
+        <div class="v-row"><span class="v-label">Bénéfice si vendu à</span><span class="v-value green">—</span></div>
+      </div>
+      <div class="v-footer">
+        <button class="btn btn-o" style="flex:1;padding:8px" onclick="openRevente(${v.id},${v.cout_total})">Gérer vente →</button>
+      </div>
+    </div>`).join('') || '<div style="color:var(--g);padding:40px;text-align:center">Aucun véhicule à vendre</div>';
+}
+
+async function loadLocation() {
+  // Simplified
+  $('locationTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--g);padding:20px">Chargement...</td></tr>';
+}
+
+async function loadVTC() {
+  $('chauffeursTable').innerHTML = ALL_CHAUFFEURS.map(c=>{
+    const v = ALL_VEHICULES.find(vv=>vv.id===c.vehicule_id);
+    return `<tr>
+      <td><strong>${c.nom}</strong><br><small style="color:var(--g)">${c.telephone||''}</small></td>
+      <td>${v?`${v.marque} ${v.modele}`:c.vehicule_id?'#'+c.vehicule_id:'—'}</td>
+      <td style="color:var(--o);font-weight:600">${fmt(c.montant_journalier)} F/j</td>
+      <td><span class="badge ${c.statut==='actif'?'b-dispo':'b-vendu'}">${c.statut}</span></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-s" onclick="openVersement(${c.id},${c.montant_journalier})">+ Versement</button>
+        <button class="btn btn-i" onclick="viewChauffeur(${c.id})">Stats</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--g);padding:20px">Aucun chauffeur</td></tr>';
+
+  // Versements récents
+  try {
+    const allV = await api('/chauffeurs');
+    // On affiche les derniers versements de tous
+    $('versementsTable').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--g)">Sélectionnez un chauffeur</td></tr>';
+  } catch(e) {}
+}
+
+// ── NOUVEAU VÉHICULE
+function openNewVehicule() {
+  openModal(`
+    <div class="modal-title">NOUVEAU VÉHICULE</div>
+    <div class="form-grid">
+      <div class="section-divider">Informations Copart</div>
+      <div class="form-group"><label class="form-label">Lot Number</label><input class="form-input" id="vLot" placeholder="Ex: 12345678"></div>
+      <div class="form-group"><label class="form-label">VIN</label><input class="form-input" id="vVin" placeholder="Ex: 1HGBH41JXMN109186"></div>
+      <div class="section-divider">Caractéristiques</div>
+      <div class="form-group"><label class="form-label">Marque *</label><input class="form-input" id="vMarque" placeholder="Ex: Toyota"></div>
+      <div class="form-group"><label class="form-label">Modèle *</label><input class="form-input" id="vModele" placeholder="Ex: Camry"></div>
+      <div class="form-group"><label class="form-label">Année</label><input class="form-input" id="vAnnee" type="number" placeholder="2020"></div>
+      <div class="form-group"><label class="form-label">Couleur</label><input class="form-input" id="vCouleur" placeholder="Ex: Blanc"></div>
+      <div class="form-group"><label class="form-label">Carburant</label>
+        <select class="form-select" id="vCarburant"><option value="essence">Essence</option><option value="diesel">Diesel</option><option value="hybride">Hybride</option><option value="electrique">Électrique</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Transmission</label>
+        <select class="form-select" id="vTrans"><option value="automatique">Automatique</option><option value="manuelle">Manuelle</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Mode</label>
+        <select class="form-select" id="vMode"><option value="revente">Revente</option><option value="location">Location</option><option value="vtc">VTC</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Kilométrage</label><input class="form-input" id="vKm" type="number" placeholder="0"></div>
+      <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-textarea" id="vNotes" placeholder="État, dommages, infos importantes..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-o" onclick="createVehicule()">Créer le véhicule →</button>
+    </div>
+  `);
+}
+
+async function createVehicule() {
+  try {
+    const data = {
+      lot_number:$('vLot').value, vin:$('vVin').value,
+      marque:$('vMarque').value, modele:$('vModele').value,
+      annee:parseInt($('vAnnee').value)||null, couleur:$('vCouleur').value,
+      carburant:$('vCarburant').value, transmission:$('vTrans').value,
+      mode:$('vMode').value, kilometrage:parseInt($('vKm').value)||0, notes:$('vNotes').value
+    };
+    if(!data.marque||!data.modele){toast('Marque et modèle obligatoires','err');return;}
+    const r = await api('/vehicules',{method:'POST',body:JSON.stringify(data)});
+    toast('Véhicule créé !'); closeModal();
+    ALL_VEHICULES = await api('/vehicules');
+    loadDashboard();
+  } catch(e){toast(e.message,'err');}
+}
+
+// ── DÉTAIL VÉHICULE
+async function openVehiculeDetail(id) {
+  const v = await api(`/vehicules/${id}`);
+  const etapes = ['en_transit','au_port','en_reparation','disponible',v.mode==='vendu'?'vendu':'en_service'];
+  const etapeIdx = {en_transit:0,au_port:1,en_reparation:2,disponible:3,vendu:4,vtc:4,location:4};
+  const current = etapeIdx[v.etat]||0;
+
+  openModal(`
+    <div class="modal-title">${v.marque} ${v.modele} ${v.annee||''}</div>
+    <div style="margin-bottom:20px;">
+      <div class="progress-steps">
+        ${['USA/Transit','Port','Réparation','Disponible','Vendu/Service'].map((l,i)=>`
+          <div class="p-step">
+            <div class="p-dot ${i<current?'done':i===current?'current':''}">${i<current?'✓':i+1}</div>
+            <div class="p-lbl">${l}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <div class="form-label" style="margin-bottom:8px">Modifier statut</div>
+        <select class="form-select" id="detailEtat" onchange="updateEtat(${v.id},this.value)">
+          <option value="en_transit" ${v.etat==='en_transit'?'selected':''}>En transit</option>
+          <option value="au_port" ${v.etat==='au_port'?'selected':''}>Au port</option>
+          <option value="en_reparation" ${v.etat==='en_reparation'?'selected':''}>En réparation</option>
+          <option value="disponible" ${v.etat==='disponible'?'selected':''}>Disponible</option>
+          <option value="vendu" ${v.etat==='vendu'?'selected':''}>Vendu</option>
+          <option value="vtc" ${v.etat==='vtc'?'selected':''}>VTC</option>
+          <option value="location" ${v.etat==='location'?'selected':''}>En location</option>
+        </select>
+      </div>
+      <div style="background:var(--b3);padding:16px;text-align:center;">
+        <div class="form-label">Coût total de revient</div>
+        <div style="font-family:Bebas Neue;font-size:32px;color:var(--o);margin-top:4px">${fmt(v.cout_total)} F</div>
+        ${v.revente?.prix_vente?`<div style="color:var(--success);font-weight:600;margin-top:4px">Bénéfice: ${fmt(v.revente.prix_vente-v.cout_total)} F</div>`:''}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+      <button class="btn btn-o" onclick="closeModal();openCoutsAchat(${v.id})">💰 Coûts USA</button>
+      <button class="btn btn-o" onclick="closeModal();openTransport(${v.id})">🚢 Transport</button>
+      <button class="btn btn-o" onclick="closeModal();openCoutsPort(${v.id})">⚓ Frais port</button>
+      <button class="btn btn-o" onclick="closeModal();openReparations(${v.id})">🔧 Réparations</button>
+      <button class="btn btn-o" onclick="closeModal();openRevente(${v.id},${v.cout_total})">💵 Revente</button>
+    </div>
+
+    <div class="form-label" style="margin-bottom:12px;">RÉPARTITION DES COÛTS</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;">
+      ${[
+        ['USA (achat+frais)',(v.achat.prix_achat||0)+(v.achat.buyer_fee||0)+(v.achat.gate_fee||0)+(v.achat.towing||0)+(v.achat.autres_usa||0)],
+        ['Transport maritime',v.transport.shipping||0],
+        ['Port & Dédouanement',(v.port.dedouanement||0)+(v.port.debarquement||0)+(v.port.magasinage||0)+(v.port.livraison_port||0)+(v.port.autres_port||0)],
+        ['Réparations',v.total_reparations||0],
+      ].map(([l,val])=>`<div style="background:var(--b3);padding:12px;"><div style="font-size:10px;color:var(--g);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${l}</div><div style="font-family:Bebas Neue;font-size:20px;color:var(--o)">${fmt(val)} F</div></div>`).join('')}
+    </div>
+
+    ${v.reparations.length?`
+    <div class="form-label" style="margin-bottom:8px;">RÉPARATIONS (${v.reparations.length})</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+      <tr style="border-bottom:1px solid var(--border)">
+        ${['Type','Description','Montant','Date'].map(h=>`<th style="padding:8px;font-size:10px;color:var(--g);text-align:left">${h}</th>`).join('')}
+      </tr>
+      ${v.reparations.map(r=>`<tr><td style="padding:8px">${r.type}</td><td style="padding:8px;color:var(--g)">${r.description||'—'}</td><td style="padding:8px;color:var(--o)">${fmt(r.montant)} F</td><td style="padding:8px;color:var(--g)">${fmtD(r.date)}</td></tr>`).join('')}
+    </table>`:''}
+
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Fermer</button>
+    </div>
+  `);
+}
+
+async function updateEtat(id, etat) {
+  await api(`/vehicules/${id}`,{method:'PATCH',body:JSON.stringify({etat})});
+  toast('Statut mis à jour !');
+  ALL_VEHICULES = await api('/vehicules');
+}
+
+// ── COÛTS USA
+function openCoutsAchat(id) {
+  const v = ALL_VEHICULES.find(vv=>vv.id===id);
+  openModal(`
+    <div class="modal-title">COÛTS USA — ${v?.marque} ${v?.modele}</div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Prix d'achat enchère ($→F)</label><input class="form-input" id="ca_achat" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Buyer Fee</label><input class="form-input" id="ca_buyer" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Gate Fee</label><input class="form-input" id="ca_gate" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Towing (jusqu'au port)</label><input class="form-input" id="ca_towing" type="number" placeholder="0"></div>
+      <div class="form-group full"><label class="form-label">Autres frais USA</label><input class="form-input" id="ca_autres" type="number" placeholder="0"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-o" onclick="saveCoutsAchat(${id})">Enregistrer</button>
+    </div>
+  `);
+}
+
+async function saveCoutsAchat(id) {
+  try {
+    await api(`/vehicules/${id}/couts-achat`,{method:'PUT',body:JSON.stringify({
+      prix_achat:parseInt($('ca_achat').value)||0, buyer_fee:parseInt($('ca_buyer').value)||0,
+      gate_fee:parseInt($('ca_gate').value)||0, towing:parseInt($('ca_towing').value)||0,
+      autres_usa:parseInt($('ca_autres').value)||0
+    })});
+    toast('Coûts USA enregistrés !');
+    closeModal(); ALL_VEHICULES=await api('/vehicules');
+  } catch(e){toast(e.message,'err');}
+}
+
+// ── TRANSPORT
+function openTransport(id) {
+  const v = ALL_VEHICULES.find(vv=>vv.id===id);
+  openModal(`
+    <div class="modal-title">TRANSPORT MARITIME — ${v?.marque} ${v?.modele}</div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Coût shipping (Fcfa)</label><input class="form-input" id="tr_ship" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Compagnie maritime</label><input class="form-input" id="tr_comp" placeholder="Ex: MSC, Maersk..."></div>
+      <div class="form-group"><label class="form-label">Numéro B/L</label><input class="form-input" id="tr_bl" placeholder="Bill of Lading"></div>
+      <div class="form-group"><label class="form-label">Date départ</label><input class="form-input" id="tr_dep" type="date"></div>
+      <div class="form-group"><label class="form-label">Arrivée estimée</label><input class="form-input" id="tr_arr_est" type="date"></div>
+      <div class="form-group"><label class="form-label">Arrivée réelle</label><input class="form-input" id="tr_arr_reel" type="date"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-o" onclick="saveTransport(${id})">Enregistrer</button>
+    </div>
+  `);
+}
+
+async function saveTransport(id) {
+  try {
+    await api(`/vehicules/${id}/transport`,{method:'PUT',body:JSON.stringify({
+      shipping:parseInt($('tr_ship').value)||0, compagnie:$('tr_comp').value,
+      numero_bl:$('tr_bl').value, date_depart:$('tr_dep').value,
+      date_arrivee_estimee:$('tr_arr_est').value, date_arrivee_reelle:$('tr_arr_reel').value
+    })});
+    toast('Transport enregistré !'); closeModal(); ALL_VEHICULES=await api('/vehicules');
+  } catch(e){toast(e.message,'err');}
+}
+
+// ── PORT
+function openCoutsPort(id) {
+  const v = ALL_VEHICULES.find(vv=>vv.id===id);
+  openModal(`
+    <div class="modal-title">FRAIS PORT — ${v?.marque} ${v?.modele}</div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Dédouanement</label><input class="form-input" id="port_ded" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Débarquement</label><input class="form-input" id="port_deb" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Magasinage</label><input class="form-input" id="port_mag" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Livraison depuis port</label><input class="form-input" id="port_liv" type="number" placeholder="0"></div>
+      <div class="form-group full"><label class="form-label">Autres frais port</label><input class="form-input" id="port_autres" type="number" placeholder="0"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-o" onclick="saveCoutsPort(${id})">Enregistrer</button>
+    </div>
+  `);
+}
+
+async function saveCoutsPort(id) {
+  try {
+    await api(`/vehicules/${id}/port`,{method:'PUT',body:JSON.stringify({
+      dedouanement:parseInt($('port_ded').value)||0, debarquement:parseInt($('port_deb').value)||0,
+      magasinage:parseInt($('port_mag').value)||0, livraison_port:parseInt($('port_liv').value)||0,
+      autres_port:parseInt($('port_autres').value)||0
+    })});
+    toast('Frais port enregistrés !'); closeModal(); ALL_VEHICULES=await api('/vehicules');
+  } catch(e){toast(e.message,'err');}
+}
+
+// ── RÉPARATIONS
+async function openReparations(id) {
+  const v = await api(`/vehicules/${id}`);
+  openModal(`
+    <div class="modal-title">RÉPARATIONS — ${v.marque} ${v.modele}</div>
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-family:Bebas Neue;font-size:18px;">Total réparations : <span style="color:var(--o)">${fmt(v.total_reparations)} F</span></div>
+      </div>
+      ${v.reparations.length?`
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+        <tr>${['Type','Description','Fournisseur','Montant','Date',''].map(h=>`<th style="padding:8px;font-size:10px;color:var(--g);text-align:left;border-bottom:1px solid var(--border)">${h}</th>`).join('')}</tr>
+        ${v.reparations.map(r=>`<tr>
+          <td style="padding:8px">${r.type}</td>
+          <td style="padding:8px;color:var(--g)">${r.description||'—'}</td>
+          <td style="padding:8px;color:var(--g)">${r.fournisseur||'—'}</td>
+          <td style="padding:8px;color:var(--o);font-weight:600">${fmt(r.montant)} F</td>
+          <td style="padding:8px;color:var(--g)">${fmtD(r.date)}</td>
+          <td style="padding:8px"><button class="btn btn-d" onclick="deleteRep(${id},${r.id})">✗</button></td>
+        </tr>`).join('')}
+      </table>`:'<div style="color:var(--g);text-align:center;padding:16px">Aucune réparation</div>'}
+    </div>
+    <div style="background:var(--b3);padding:16px;">
+      <div style="font-family:Bebas Neue;font-size:15px;margin-bottom:12px;color:var(--o)">AJOUTER UNE RÉPARATION</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="form-select" id="rep_type">
+            <option value="pieces">Pièces</option><option value="main_oeuvre">Main d'œuvre</option>
+            <option value="peinture">Peinture</option><option value="carrosserie">Carrosserie</option>
+            <option value="mecanique">Mécanique</option><option value="electricite">Électricité</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Montant (Fcfa)</label><input class="form-input" id="rep_montant" type="number" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Description</label><input class="form-input" id="rep_desc" placeholder="Détails..."></div>
+        <div class="form-group"><label class="form-label">Fournisseur</label><input class="form-input" id="rep_four" placeholder="Garage, fournisseur..."></div>
+        <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="rep_date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+      </div>
+      <div style="margin-top:12px;text-align:right;">
+        <button class="btn btn-o" onclick="addReparation(${id})">+ Ajouter</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Fermer</button>
+    </div>
+  `);
+}
+
+async function addReparation(id) {
+  try {
+    await api(`/vehicules/${id}/reparations`,{method:'POST',body:JSON.stringify({
+      type:$('rep_type').value, montant:parseInt($('rep_montant').value)||0,
+      description:$('rep_desc').value, fournisseur:$('rep_four').value, date:$('rep_date').value
+    })});
+    toast('Réparation ajoutée !');
+    ALL_VEHICULES=await api('/vehicules');
+    openReparations(id);
+  } catch(e){toast(e.message,'err');}
+}
+
+async function deleteRep(vid,rid) {
+  if(!confirm('Supprimer?'))return;
+  await api(`/vehicules/${vid}/reparations/${rid}`,{method:'DELETE'});
+  toast('Supprimé'); ALL_VEHICULES=await api('/vehicules'); openReparations(vid);
+}
+
+// ── REVENTE
+function openRevente(id, coutTotal) {
+  const v = ALL_VEHICULES.find(vv=>vv.id===id);
+  openModal(`
+    <div class="modal-title">REVENTE — ${v?.marque} ${v?.modele}</div>
+    <div style="background:var(--b3);padding:14px;margin-bottom:20px;display:flex;justify-content:space-between;">
+      <span style="color:var(--g)">Coût de revient</span>
+      <span style="font-family:Bebas Neue;font-size:20px;color:var(--o)">${fmt(coutTotal)} F</span>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Prix de vente (Fcfa)</label><input class="form-input" id="rev_prix" type="number" placeholder="0" oninput="calcBenefice(${coutTotal})"></div>
+      <div class="form-group"><label class="form-label">Acompte reçu</label><input class="form-input" id="rev_acompte" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Acheteur</label><input class="form-input" id="rev_acheteur" placeholder="Nom acheteur"></div>
+      <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" id="rev_tel" placeholder="+221..."></div>
+      <div class="form-group"><label class="form-label">Date vente</label><input class="form-input" id="rev_date" type="date"></div>
+      <div class="form-group"><label class="form-label">Statut</label>
+        <select class="form-select" id="rev_statut">
+          <option value="en_cours">En cours</option>
+          <option value="vendu">Vendu — Payé</option>
+        </select>
+      </div>
+      <div class="form-group full" style="background:var(--b3);padding:14px;text-align:center;">
+        <div style="font-size:12px;color:var(--g)">Bénéfice estimé</div>
+        <div id="beneficeDisplay" style="font-family:Bebas Neue;font-size:32px;color:var(--success)">— F</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-o" onclick="saveRevente(${id})">Enregistrer</button>
+    </div>
+  `);
+}
+
+function calcBenefice(coutTotal) {
+  const prix = parseInt($('rev_prix').value)||0;
+  const ben = prix - coutTotal;
+  const el = $('beneficeDisplay');
+  el.textContent = fmt(ben)+' F';
+  el.style.color = ben>=0?'var(--success)':'var(--danger)';
+}
+
+async function saveRevente(id) {
+  try {
+    await api(`/vehicules/${id}/revente`,{method:'PUT',body:JSON.stringify({
+      prix_vente:parseInt($('rev_prix').value)||0, acheteur_nom:$('rev_acheteur').value,
+      acheteur_tel:$('rev_tel').value, date_vente:$('rev_date').value,
+      acompte:parseInt($('rev_acompte').value)||0, statut:$('rev_statut').value
+    })});
+    toast('Vente enregistrée !'); closeModal(); ALL_VEHICULES=await api('/vehicules');
+  } catch(e){toast(e.message,'err');}
+}
+
+// ── CHAUFFEURS VTC
+function openNewChauffeur() {
+  const disponibles = ALL_VEHICULES.filter(v=>v.etat==='disponible'||v.mode==='vtc');
+  openModal(`
+    <div class="modal-title">NOUVEAU CHAUFFEUR VTC</div>
+    <div class="form-grid">
+      <div class="form-group full"><label class="form-label">Nom *</label><input class="form-input" id="ch_nom" placeholder="Nom complet"></div>
+      <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" id="ch_tel" placeholder="+221 77..."></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ch_email" type="email"></div>
+      <div class="form-group"><label class="form-label">Numéro permis</label><input class="form-input" id="ch_permis" placeholder="N° permis"></div>
+      <div class="form-group"><label class="form-label">Véhicule assigné</label>
+        <select class="form-select" id="ch_veh">
+          <option value="">Aucun</option>
+          ${disponibles.map(v=>`<option value="${v.id}">${v.marque} ${v.modele} ${v.annee||''}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Versement journalier (Fcfa)</label><input class="form-input" id="ch_montant" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Date de début</label><input class="form-input" id="ch_debut" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-textarea" id="ch_notes"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-o" onclick="createChauffeur()">Créer le chauffeur</button>
+    </div>
+  `);
+}
+
+async function createChauffeur() {
+  try {
+    await api('/chauffeurs',{method:'POST',body:JSON.stringify({
+      nom:$('ch_nom').value, telephone:$('ch_tel').value, email:$('ch_email').value,
+      permis:$('ch_permis').value, vehicule_id:parseInt($('ch_veh').value)||null,
+      montant_journalier:parseInt($('ch_montant').value)||0,
+      date_debut:$('ch_debut').value, notes:$('ch_notes').value
+    })});
+    toast('Chauffeur créé !'); closeModal();
+    ALL_CHAUFFEURS=await api('/chauffeurs'); ALL_VEHICULES=await api('/vehicules');
+    loadVTC();
+  } catch(e){toast(e.message,'err');}
+}
+
+// ── VERSEMENT VTC
+function openVersement(chId, montantAttendu) {
+  const ch = ALL_CHAUFFEURS.find(c=>c.id===chId);
+  const v = ch?.vehicule_id ? ALL_VEHICULES.find(vv=>vv.id===ch.vehicule_id) : null;
+  openModal(`
+    <div class="modal-title">VERSEMENT VTC</div>
+    <div style="background:var(--b3);padding:14px;margin-bottom:20px;">
+      <div><strong>${ch?.nom}</strong> — ${v?`${v.marque} ${v.modele}`:''}</div>
+      <div style="color:var(--g);font-size:13px;margin-top:4px">Montant attendu : ${fmt(montantAttendu)} F/jour</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="ver_date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-group"><label class="form-label">Montant versé (Fcfa)</label><input class="form-input" id="ver_montant" type="number" placeholder="${montantAttendu}" value="${montantAttendu}"></div>
+      <div class="form-group"><label class="form-label">Kilométrage actuel</label><input class="form-input" id="ver_km" type="number" placeholder="Km compteur"></div>
+      <div class="form-group full"><label class="form-label">Notes</label><input class="form-input" id="ver_notes" placeholder="Remarques..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-o" onclick="saveVersement(${chId},${montantAttendu})">Enregistrer le versement</button>
+    </div>
+  `);
+}
+
+async function quickVersement(chId, montant, date) {
+  openVersement(chId, montant);
+}
+
+async function saveVersement(chId, montantAttendu) {
+  try {
+    await api(`/chauffeurs/${chId}/versements`,{method:'POST',body:JSON.stringify({
+      date:$('ver_date').value, montant_verse:parseInt($('ver_montant').value)||0,
+      montant_attendu:montantAttendu, kilometrage:parseInt($('ver_km').value)||0,
+      notes:$('ver_notes').value
+    })});
+    toast('Versement enregistré !'); closeModal();
+    ALL_CHAUFFEURS=await api('/chauffeurs'); loadVTC(); loadDashboard();
+  } catch(e){toast(e.message,'err');}
+}
+
+async function viewChauffeur(id) {
+  const stats = await api(`/chauffeurs/${id}/stats`);
+  const ch = ALL_CHAUFFEURS.find(c=>c.id===id);
+  const v = ch?.vehicule_id ? ALL_VEHICULES.find(vv=>vv.id===ch.vehicule_id) : null;
+  openModal(`
+    <div class="modal-title">STATS — ${ch?.nom}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="background:var(--b3);padding:16px;text-align:center;">
+        <div class="stat-lbl">Total versé</div>
+        <div style="font-family:Bebas Neue;font-size:28px;color:var(--success)">${fmt(stats.total_verse)} F</div>
+      </div>
+      <div style="background:var(--b3);padding:16px;text-align:center;">
+        <div class="stat-lbl">Manquant</div>
+        <div style="font-family:Bebas Neue;font-size:28px;color:${stats.manquant>0?'var(--danger)':'var(--success)'}">${fmt(stats.manquant)} F</div>
+      </div>
+      <div style="background:var(--b3);padding:16px;text-align:center;">
+        <div class="stat-lbl">Jours travaillés</div>
+        <div style="font-family:Bebas Neue;font-size:28px">${stats.nb_jours}</div>
+      </div>
+      <div style="background:var(--b3);padding:16px;text-align:center;">
+        <div class="stat-lbl">Véhicule</div>
+        <div style="font-size:14px;font-weight:600;margin-top:8px">${v?`${v.marque} ${v.modele}`:ch?.vehicule_id?'#'+ch.vehicule_id:'—'}</div>
+        ${v?`<div style="font-size:11px;color:var(--g)">${fmt(v.kilometrage)} km</div>`:''}
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-o" onclick="closeModal();openVersement(${id},${ch?.montant_journalier||0})">+ Versement</button>
+      <button class="btn btn-b" onclick="closeModal()">Fermer</button>
+    </div>
+  `);
+}
+
+function openNewLocation() {
+  const dispo = ALL_VEHICULES.filter(v=>v.etat==='disponible'&&v.mode==='location');
+  openModal(`
+    <div class="modal-title">NOUVELLE LOCATION</div>
+    <div class="form-grid">
+      <div class="form-group full"><label class="form-label">Véhicule</label>
+        <select class="form-select" id="loc_veh">${dispo.map(v=>`<option value="${v.id}">${v.marque} ${v.modele} ${v.annee||''}</option>`).join('')}</select>
+      </div>
+      <div class="form-group full"><label class="form-label">Client *</label><input class="form-input" id="loc_client" placeholder="Nom client"></div>
+      <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" id="loc_tel"></div>
+      <div class="form-group"><label class="form-label">Prix / jour (Fcfa)</label><input class="form-input" id="loc_prix" type="number" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Date début</label><input class="form-input" id="loc_debut" type="date"></div>
+      <div class="form-group"><label class="form-label">Date fin</label><input class="form-input" id="loc_fin" type="date"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-b" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-o" onclick="toast('Location enregistrée !')">Créer</button>
+    </div>
+  `);
+}
+
+// ── INIT
+if(TOKEN) {
+  api('/auth/me').then(admin=>{ ADMIN=admin; initApp(); }).catch(()=>{localStorage.clear();});
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('loginScreen').style.display!=='none')login();});
+
+// Fond animé EDGE CARS
+const ICONS = ['🚗','🚙','🏎️','🚕','🚐','🛻','🔧','🔑','🚢','⛽','🛞','🏁','🗺️','🇺🇸'];
+
+// Fond animé EDGE CARS
+(function(){
+  const ICONS=['🚗','🏎️','🚙','🛻','🚕','🔧','🔑','🚢','⛽','🛞','🏁','🇺🇸','🚐','🗺️'];
+  const wrap=document.createElement('div');wrap.className='bg-wrapper';
+  const grad=document.createElement('div');grad.className='bg-gradient';
+  const items=document.createElement('div');items.id='bgItems';
+  const overlay=document.createElement('div');overlay.className='bg-overlay';
+  for(let i=0;i<40;i++){
+    const el=document.createElement('div');el.className='bg-item';
+    el.textContent=ICONS[Math.floor(Math.random()*ICONS.length)];
+    const size=80+Math.random()*120;
+    el.style.cssText=`font-size:${size}px;left:${Math.random()*100}vw;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*-20}s;`;
+    items.appendChild(el);
+  }
+  wrap.appendChild(grad);wrap.appendChild(items);wrap.appendChild(overlay);
+  document.body.insertBefore(wrap,document.body.firstChild);
+})();
+
+</script>
+</body>
+</html>
